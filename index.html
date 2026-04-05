@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>APC Premium Slip Generator</title>
+<style>
+/* RESET */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* BODY */
+body {
+  height: 100vh;
+  background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* APP CONTAINER */
+.app { width:400px; }
+
+/* FORM PANEL */
+.left {
+  padding:25px;
+  border-radius:20px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  animation: fadeIn 1s ease;
+  text-align:center;
+}
+
+.left h2 { color:#fff; margin-bottom:15px; }
+
+/* INPUTS */
+input[type="text"],
+input[type="date"] {
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:12px;
+  border:none;
+  outline:none;
+  font-size:14px;
+  background: rgba(255,255,255,0.15);
+  color:#fff;
+  transition:0.3s;
+}
+
+input::placeholder { color:#ddd; }
+input:focus { transform: scale(1.03); box-shadow: 0 0 15px #00ffcc; }
+
+/* FILE INPUT STYLING */
+.file-input-wrapper {
+  position: relative;
+  width:100%;
+  margin:10px 0;
+}
+
+.file-input-wrapper input[type="file"] {
+  opacity: 0;
+  width:100%;
+  height:50px;
+  cursor:pointer;
+}
+
+.file-input-label {
+  position: absolute;
+  top:0;
+  left:0;
+  height:50px;
+  width:100%;
+  background: linear-gradient(135deg,#ff9800,#ffc107);
+  border-radius:25px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.file-input-label:hover {
+  transform: translateY(-2px);
+  box-shadow:0 8px 20px rgba(255,200,0,0.5);
+}
+
+/* SMALL IMAGE PREVIEW */
+#smallPreview {
+  width:60px;
+  height:60px;
+  object-fit:cover;
+  margin:10px auto;
+  border-radius:8px;
+  border:2px solid #fff;
+  display:none;
+}
+
+/* GENERATE BUTTON */
+button.generate {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:30px;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+  background: linear-gradient(45deg,#00ffcc,#00c853);
+  color:#000;
+  transition:0.3s;
+}
+
+button.generate:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,255,200,0.5); }
+
+/* MODAL */
+#modal {
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: rgba(0,0,0,0.8);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+/* MODAL CONTENT */
+.modal-content {
+  background:#111;
+  padding:20px;
+  border-radius:15px;
+  position:relative;
+  animation: zoomIn 0.4s ease;
+  text-align:center;
+}
+
+/* CLOSE */
+.close {
+  position:absolute;
+  top:10px;
+  right:15px;
+  font-size:25px;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* SLIP */
+#slip {
+  width:600px;
+  height:350px;
+  position:relative;
+  border-radius:15px;
+  overflow:hidden;
+  margin-bottom:15px;
+  background:#000;
+}
+
+/* FRAME IMAGE */
+#frame {
+  position:absolute;
+  width:100%;
+  height:100%;
+  top:0;
+  left:0;
+  z-index:0;
+}
+
+/* USER PHOTO */
+#photoPreview {
+  position:absolute;
+  top:85px;
+  left:40px;
+  width:105px;
+  height:118px;
+  object-fit:cover;
+  border-radius:8px;
+  border:3px solid #fff;
+  z-index:1;
+}
+
+/* TEXT */
+.name { position:absolute; top:96px; left:160px; font-size:16px; font-weight:bold; z-index:2; }
+.id { position:absolute; top:201px; left:153px; font-size:30px; font-weight:bold; z-index:2; }
+.date { position:absolute; top:124px; left:281px; font-size:13px; z-index:2; }
+.state, .lga, .ward { position:absolute; font-size:14px; font-weight:bold; z-index:2; }
+.state { bottom:51px; left:53px; }
+.lga { bottom:54px; left:280px; }
+.ward { bottom:53px; left:490px; }
+
+/* MODAL BUTTONS */
+.modal-buttons { display:flex; gap:10px; justify-content:center; }
+.modal-buttons button {
+  flex:1;
+  padding:12px;
+  border-radius:25px;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+/* DOWNLOAD BUTTON */
+#downloadBtn {
+  background: linear-gradient(135deg,#00ffcc,#00c853);
+  color:#000;
+}
+
+#downloadBtn:hover { transform: translateY(-2px); box-shadow:0 8px 20px rgba(0,255,200,0.5); }
+
+/* BACK BUTTON */
+.modal-buttons button:nth-child(2){
+  background: linear-gradient(135deg,#ff4081,#ff80ab);
+  color:#fff;
+}
+
+.modal-buttons button:nth-child(2):hover { transform: translateY(-2px); box-shadow:0 8px 20px rgba(255,64,129,0.5); }
+
+/* ANIMATIONS */
+@keyframes fadeIn { from {opacity:0; transform:translateY(30px);} to {opacity:1; transform:translateY(0);} }
+@keyframes zoomIn { from {transform:scale(0.7); opacity:0;} to {transform:scale(1); opacity:1;} }
+
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="left">
+    <h2>APC Premium Slip</h2>
+    <input type="text" id="name" placeholder="Full Name">
+    <input type="text" id="membership" placeholder="Membership ID">
+    <input type="text" id="state" placeholder="State">
+    <input type="text" id="lga" placeholder="LGA">
+    <input type="text" id="ward" placeholder="Ward">
+    <input type="date" id="date">
+
+    <!-- Styled file input -->
+    <div class="file-input-wrapper">
+      <input type="file" id="photo" accept="image/*">
+      <label class="file-input-label" for="photo">Set Image</label>
+    </div>
+
+    <!-- Small preview -->
+    <img id="smallPreview" alt="Preview">
+
+    <button class="generate" onclick="generateSlip()">Generate Slip</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+
+    <div id="slip">
+      <img src="frame.png" id="frame">
+      <img id="photoPreview">
+      <div class="name" id="sName"></div>
+      <div class="id" id="sMembership"></div>
+      <div class="date" id="sDate"></div>
+      <div class="state" id="sState"></div>
+      <div class="lga" id="sLga"></div>
+      <div class="ward" id="sWard"></div>
+    </div>
+
+    <div class="modal-buttons">
+      <button id="downloadBtn" onclick="downloadSlip()" disabled>Download</button>
+      <button onclick="closeModal()">Back</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+const photoInput = document.getElementById('photo');
+const smallPreview = document.getElementById('smallPreview');
+const photoPreview = document.getElementById('photoPreview');
+
+photoInput.addEventListener('change', function(){
+  const file = this.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      smallPreview.src = e.target.result;
+      smallPreview.style.display = 'block';
+      photoPreview.src = e.target.result; // ready for modal
+    }
+    reader.readAsDataURL(file);
+  }
+});
+
+function formatDate(dateStr){
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"});
+}
+
+function generateSlip(){
+  document.getElementById("sName").innerText = document.getElementById("name").value.toUpperCase();
+  document.getElementById("sMembership").innerText = document.getElementById("membership").value;
+  document.getElementById("sDate").innerText = formatDate(document.getElementById("date").value);
+  document.getElementById("sState").innerText = document.getElementById("state").value;
+  document.getElementById("sLga").innerText = document.getElementById("lga").value;
+  document.getElementById("sWard").innerText = document.getElementById("ward").value;
+
+  document.getElementById("downloadBtn").disabled = false;
+  document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal(){
+  document.getElementById("modal").style.display = "none";
+}
+
+function downloadSlip(){
+  html2canvas(document.getElementById("slip"),{scale:3,useCORS:true}).then(canvas=>{
+    const link = document.createElement("a");
+    link.download = "apc-slip.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+}
+</script>
+
+</body>
+</html>
